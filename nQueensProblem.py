@@ -1,7 +1,7 @@
 from utils import Population
 
-def solveNQueens(n, populationSize, maxGenerations):
+def solveNQueens(populationSize, n, maxGenerations):
     population=Population(populationSize, n)
     population.solve(maxGenerations)
 
-solveNQueens(4, 10, 10)
+solveNQueens(100, 8, 100)

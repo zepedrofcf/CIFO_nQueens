@@ -26,26 +26,36 @@ class Population:
             self.pickAndMutate()
             self.generationCount+=1
             print("Best Fitness: ", self.bestFitness)
-            #print("Best Position: ", self.bestPosition)
+        print("Best Fitness: ", self.bestFitness)
+        print("Best Position: ", self.bestPosition)
         print("Generation Count: ", self.generationCount)
+        self.printBestPosition()
+
+    def printBestPosition(self):
+        for i in range(self.n):
+            str = ""
+            for j in range(self.n):
+                queen_found = False
+                for queen in self.bestPosition:
+                    if queen[0] == i and queen[1] == j:
+                        str += "Q"
+                        queen_found = True
+                        break
+                if not queen_found:
+                    str += "x"
+            print(str)
 
     def pickAndMutate(self):
-        for _ in range(50):
+        for _ in range(self.size):
             self.mutate(self.pick())
-        
 
     def pick(self):
         normalizedCumulativeFitness= self.normalizeFitness()
-        #print(normalizedCumulativeFitness)
-        rnd= random.uniform(0,1)
-        pick=0
+        rnd = random.uniform(0, 1)
         for i in range(len(normalizedCumulativeFitness)):
-            if normalizedCumulativeFitness[i]>rnd:
-                pick=i
-                break
-            else:
-                pick = len(normalizedCumulativeFitness) - 1
-        return pick
+            if normalizedCumulativeFitness[i] > rnd:
+                return i
+        return len(normalizedCumulativeFitness) - 1
 
     def mutate(self, i):
         position=set()
@@ -53,10 +63,10 @@ class Population:
             x = random.randint(0, self.n)
             y = random.randint(0, self.n)
             position.add((x, y))
-        print(self.currentPopulation[i])
-        print("mutate")
+        #print(self.currentPopulation[i])
+        #print("mutate")
         self.currentPopulation[i]=list(position)
-        print(self.currentPopulation[i])
+        #print(self.currentPopulation[i])
 
 
     def getFitnessOnPopulation(self):
