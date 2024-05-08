@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dependency directories
+.Python
+env/
+venv/
+env/
+venv/
+.vscode/
+
+# Editor files
+.vscode/
+*.swp
+.project
+.pydevproject
+
+# Miscellaneous
+.DS_Store
+.env
+.env.local
+.env.*.local
+.*.env
+*.log
