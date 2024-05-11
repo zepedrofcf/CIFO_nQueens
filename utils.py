@@ -11,8 +11,8 @@ class Population:
         for _ in range(self.size):
             position=set()
             while len(position)<n:
-                x = random.randint(0, n)
-                y = random.randint(0, n)
+                x = random.randint(0, n-1)
+                y = random.randint(0, n-1)
                 position.add((x, y))
             firstPopulation.append(list(position))
         self.currentPopulation=firstPopulation
@@ -29,14 +29,14 @@ class Population:
         print("Best Fitness: ", self.bestFitness)
         print("Best Position: ", self.bestPosition)
         print("Generation Count: ", self.generationCount)
-        self.printBestPosition()
+        self.printPosition(self.bestPosition)
 
-    def printBestPosition(self):
+    def printPosition(self, pos):
         for i in range(self.n):
             str = ""
             for j in range(self.n):
                 queen_found = False
-                for queen in self.bestPosition:
+                for queen in pos:
                     if queen[0] == i and queen[1] == j:
                         str += "Q"
                         queen_found = True
@@ -60,8 +60,8 @@ class Population:
     def mutate(self, i):
         position=set()
         while len(position)<self.n:
-            x = random.randint(0, self.n)
-            y = random.randint(0, self.n)
+            x = random.randint(0, self.n-1)
+            y = random.randint(0, self.n-1)
             position.add((x, y))
         #print(self.currentPopulation[i])
         #print("mutate")
@@ -80,7 +80,8 @@ class Population:
         fitnessCount=0
         for p1 in position:
             for p2 in position:
-                fitnessCount += self.isHorizontal(p1, p2) + self.isVertical(p1, p2) + self.isDiagonal(p1, p2)
+                if(p1!=p2):
+                    fitnessCount += self.isHorizontal(p1, p2) + self.isVertical(p1, p2) + self.isDiagonal(p1, p2)
         fitnessCount/=2
         if(self.bestFitness>fitnessCount):
             self.bestFitness=fitnessCount
@@ -107,4 +108,3 @@ class Population:
         majorDiagonal = p1[0] - p1[1] == p2[0] - p2[1]
         minorDiagonal = p1[0] + p1[1] == p2[0] + p2[1]
         return majorDiagonal or minorDiagonal
-        
