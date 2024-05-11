@@ -19,17 +19,24 @@ class Population:
         self.currentFitness=[]
     
     def solve(self, maxGenerations):
-        while self.generationCount<maxGenerations:
-            self.getFitnessOnPopulation()
-            if self.bestFitness==0:
-                break
-            self.pickAndMutate()
-            self.generationCount+=1
+        if self.n==1:
+            print("Answer: (0,0),  duh")
+            return 
+        elif self.n==2 or self.n==3 or self.n<1:
+            print("No solution")
+            return
+        else:
+            while self.generationCount<maxGenerations:
+                self.getFitnessOnPopulation()
+                if self.bestFitness==0:
+                    break
+                self.pickAndMutate()
+                self.generationCount+=1
+                print("Best Fitness: ", self.bestFitness)
             print("Best Fitness: ", self.bestFitness)
-        print("Best Fitness: ", self.bestFitness)
-        print("Best Position: ", self.bestPosition)
-        print("Generation Count: ", self.generationCount)
-        self.printPosition(self.bestPosition)
+            print("Best Position: ", self.bestPosition)
+            print("Generation Count: ", self.generationCount)
+            self.printPosition(self.bestPosition)
 
     def printPosition(self, pos):
         for i in range(self.n):

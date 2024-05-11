@@ -4,4 +4,4 @@ def solveNQueens(populationSize, n, maxGenerations):
     population=Population(populationSize, n)
     population.solve(maxGenerations)
 
-solveNQueens(100, 8, 100)
+solveNQueens(100, 6, 100)
