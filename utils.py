@@ -24,14 +24,15 @@ class Population:
     
     def solve(self, maxGenerations):
         if self.n==1:
-            print("Answer: (0,0),  duh")
+            print("Answer: (0,0)  duh")
+            print("X")
             return 
         elif self.n==2 or self.n==3 or self.n<1:
             print("No solution")
             return
         else:
+            self.getFitnessOnPopulation()
             while self.generationCount<maxGenerations:
-                self.getFitnessOnPopulation()
                 if self.bestFitness==0:
                     break
                 self.pickAndMutate()
@@ -82,7 +83,7 @@ class Population:
         if self.mutationFunction=="mutateIndividualForRandom":
             individual=set()
         elif self.mutationFunction=="mutateConflictPosition":
-            individual=self.currentPopulation[i]
+            individual=self.currentPopulation[i].copy()
             conflictIndexes=self.getConflictPositions(individual)
             individual.pop(conflictIndexes[0])
             individual.pop(conflictIndexes[1]-1)

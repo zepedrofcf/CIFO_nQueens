@@ -4,4 +4,4 @@ def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationF
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
     population.solve(maxGenerations)
 
-solveNQueens(100, 5, 500, "highFitnessProportionSelection", "mutateConflictPosition", "crossHalf")
+solveNQueens(100, 6, 200, "highFitnessProportionSelection", "mutateConflictPosition", "crossHalf")
