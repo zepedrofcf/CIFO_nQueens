@@ -54,11 +54,11 @@ class Population:
                 queen_found = False
                 for queen in pos:
                     if queen[0] == i and queen[1] == j:
-                        str += "Q "
+                        str += "Q  "
                         queen_found = True
                         break
                 if not queen_found:
-                    str += "x "
+                    str += "X  "
             print(str)
 
     def pickAndMutate(self):
