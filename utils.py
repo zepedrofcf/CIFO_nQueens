@@ -1,4 +1,7 @@
 import random
+import time 
+import datetime
+
 
 class Population:
     def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction):
@@ -23,6 +26,7 @@ class Population:
         self.cumulativeNormalizedFitness=[]
     
     def solve(self, maxGenerations):
+        startTime = time.time()
         if self.n==1:
             print("Answer: (0,0)  duh")
             print("X")
@@ -43,6 +47,7 @@ class Population:
             print("Best Position: ", self.bestPosition)
             print("Generation Count: ", self.generationCount)
             self.printPosition(self.bestPosition)
+            print("Execution time: ", format_time(time.time() - startTime))
 
     def crossOver(self):
         if self.crossOverFunction=="crossHalf":
@@ -144,3 +149,14 @@ class Population:
         majorDiagonal = p1[0] - p1[1] == p2[0] - p2[1]
         minorDiagonal = p1[0] + p1[1] == p2[0] + p2[1]
         return majorDiagonal or minorDiagonal
+    
+def format_time(seconds):
+    td = datetime.timedelta(seconds=seconds)
+    hours = td.seconds // 3600
+    minutes = (td.seconds % 3600) // 60
+    seconds = td.seconds % 60
+    if hours==0:
+        if minutes==0:
+            return "{:d} seconds".format(seconds)
+        return "{:d} minutes, {:d} seconds".format(minutes, seconds)
+    return "{:d} hours, {:d} minutes, {:d} seconds".format(hours, minutes, seconds)
