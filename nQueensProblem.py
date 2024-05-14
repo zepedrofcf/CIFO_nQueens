@@ -1,7 +1,7 @@
 from utils import Population
 
-def solveNQueens(populationSize, n, maxGenerations):
-    population=Population(populationSize, n)
+def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
+    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
     population.solve(maxGenerations)
 
-solveNQueens(100, 5, 1000)
+solveNQueens(100, 6, 1000, "highFitnessProportionSelection", "mutateConflictPosition", "")

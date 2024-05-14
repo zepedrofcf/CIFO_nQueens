@@ -1,9 +1,12 @@
 import random
 
 class Population:
-    def __init__(self, size, n):
+    def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction):
         self.size = size
         self.n = n
+        self.selectionFunction=selectionFunction
+        self.mutationFunction=mutationFunction
+        self.crossOverFunction=crossOverFunction
         self.bestPosition=[]
         self.bestFitness=100000
         self.generationCount=0
@@ -17,6 +20,7 @@ class Population:
             firstPopulation.append(list(position))
         self.currentPopulation=firstPopulation
         self.currentFitness=[]
+        self.cumulativeNormalizedFitness=[]
     
     def solve(self, maxGenerations):
         if self.n==1:
@@ -31,12 +35,17 @@ class Population:
                 if self.bestFitness==0:
                     break
                 self.pickAndMutate()
+                self.crossOver()
                 self.generationCount+=1
-                print("Best Fitness: ", self.bestFitness)
+                print("Current Best Fitness: ", self.bestFitness)
             print("Best Fitness: ", self.bestFitness)
             print("Best Position: ", self.bestPosition)
             print("Generation Count: ", self.generationCount)
             self.printPosition(self.bestPosition)
+
+    def crossOver(self):
+        if self.crossOverFunction=="crossHalf":
+            return 0
 
     def printPosition(self, pos):
         for i in range(self.n):
@@ -53,48 +62,67 @@ class Population:
             print(str)
 
     def pickAndMutate(self):
-        for _ in range(self.size):
+        for _ in range(len(self.currentPopulation)):
             self.mutate(self.pick())
+            if self.bestFitness==0:
+                break
 
     def pick(self):
-        normalizedCumulativeFitness= self.normalizeFitness()
+        if(self.selectionFunction=="lowFitnessProportionSelection"):
+            fitnessDistribution=self.cumulativeNormalizedFitness
+        elif(self.selectionFunction=="highFitnessProportionSelection"):
+            fitnessDistribution=[1 - x for x in self.cumulativeNormalizedFitness]
         rnd = random.uniform(0, 1)
-        for i in range(len(normalizedCumulativeFitness)):
-            if normalizedCumulativeFitness[i] > rnd:
+        for i in range(len(fitnessDistribution)):
+            if fitnessDistribution[i] > rnd:
                 return i
-        return len(normalizedCumulativeFitness) - 1
+        return len(fitnessDistribution) - 1
 
     def mutate(self, i):
-        position=set()
-        while len(position)<self.n:
+        if self.mutationFunction=="mutateIndividualForRandom":
+            individual=set()
+        elif self.mutationFunction=="mutateConflictPosition":
+            individual=self.currentPopulation[i]
+            conflictIndexes=self.getConflictPositions(individual)
+            individual.pop(conflictIndexes[0])
+            individual.pop(conflictIndexes[1]-1)
+            individual=set(individual)
+        while len(individual)<self.n:
             x = random.randint(0, self.n-1)
             y = random.randint(0, self.n-1)
-            position.add((x, y))
-        #print(self.currentPopulation[i])
-        #print("mutate")
-        self.currentPopulation[i]=list(position)
-        #print(self.currentPopulation[i])
-
+            individual.add((x, y))
+        self.currentPopulation[i]=list(individual)
+        self.currentFitness[i]=self.getFitnessOnIndividual(self.currentPopulation[i])
+            
+    def getConflictPositions(self, individual):
+        fitnessCount=0
+        for p1 in individual:
+            for p2 in individual:
+                if(p1!=p2):
+                    fitnessCount += self.hasHorizontalConflict(p1, p2) + self.hasVerticalConflict(p1, p2) + self.hasDiagonalConflict(p1, p2)
+                if fitnessCount>0:
+                    return sorted([individual.index(p1), individual.index(p2)], reverse=True)
 
     def getFitnessOnPopulation(self):
         populationFitness=[]
         for position in self.currentPopulation:
-            populationFitness.append(self.getFitnessOnPosition(position))
+            populationFitness.append(self.getFitnessOnIndividual(position))
         self.currentFitness=populationFitness
+        self.cumulativeNormalizedFitness=self.normalizeFitness()
         
         
-    def getFitnessOnPosition(self, position):
+    def getFitnessOnIndividual(self, individual):
         fitnessCount=0
-        for p1 in position:
-            for p2 in position:
+        for p1 in individual:
+            for p2 in individual:
                 if(p1!=p2):
-                    fitnessCount += self.isHorizontal(p1, p2) + self.isVertical(p1, p2) + self.isDiagonal(p1, p2)
+                    fitnessCount += self.hasHorizontalConflict(p1, p2) + self.hasVerticalConflict(p1, p2) + self.hasDiagonalConflict(p1, p2)
         fitnessCount/=2
         if(self.bestFitness>fitnessCount):
             self.bestFitness=fitnessCount
-            self.bestPosition=position
+            self.bestPosition=individual
         return int(fitnessCount)
-    
+
 
     def normalizeFitness(self):
         totalFitness = sum(self.currentFitness)
@@ -105,13 +133,13 @@ class Population:
             cumulativeNormalizedFitness.append(fit)
         return cumulativeNormalizedFitness
 
-    def isHorizontal(self, p1, p2):
+    def hasHorizontalConflict(self, p1, p2):
         return p1[0]==p2[0]
 
-    def isVertical(self, p1, p2):
+    def hasVerticalConflict(self, p1, p2):
         return p1[1]==p2[1]
 
-    def isDiagonal(self, p1, p2):
+    def hasDiagonalConflict(self, p1, p2):
         majorDiagonal = p1[0] - p1[1] == p2[0] - p2[1]
         minorDiagonal = p1[0] + p1[1] == p2[0] + p2[1]
         return majorDiagonal or minorDiagonal
