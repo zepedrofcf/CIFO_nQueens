@@ -51,7 +51,27 @@ class Population:
 
     def crossOver(self):
         if self.crossOverFunction=="crossHalf":
-            return 0
+            for _ in range(len(self.currentPopulation)):
+                first=self.pick()
+                second=self.pick()
+                newIndividuals=self.mixTwoHalves(self.currentPopulation[first], self.currentPopulation[second])
+                self.currentPopulation[first]=newIndividuals[0]
+                self.currentPopulation[second]=newIndividuals[1]
+                self.currentFitness[first]=self.getFitnessOnIndividual(self.currentPopulation[first])
+                self.currentFitness[second]=self.getFitnessOnIndividual(self.currentPopulation[second])
+
+    def mixTwoHalves(self, first, second):
+        firstNew=[]
+        secondNew=[]
+        all=sorted(first+second)            
+        firstNew=[]
+        secondNew=[]
+        for i in range(len(all)):
+            if(i%2==0):
+                firstNew.append(all[i])
+            else:
+                secondNew.append(all[i])
+        return [list(firstNew), list(secondNew)]
 
     def printPosition(self, pos):
         for i in range(self.n):
