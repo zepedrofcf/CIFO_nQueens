@@ -44,6 +44,8 @@ class Population:
                 self.generationCount+=1
                 print("Current Best Fitness: ", self.bestFitness)
             print("Best Fitness: ", self.bestFitness)
+            print("n =", self.n)
+            print("Population Size =", self.size)
             print("Best Position: ", self.bestPosition)
             print("Generation Count: ", self.generationCount)
             self.printPosition(self.bestPosition)
@@ -94,15 +96,20 @@ class Population:
                 break
 
     def pick(self):
-        if(self.selectionFunction=="lowFitnessProportionSelection"):
-            fitnessDistribution=self.cumulativeNormalizedFitness
-        elif(self.selectionFunction=="highFitnessProportionSelection"):
-            fitnessDistribution=[1 - x for x in self.cumulativeNormalizedFitness]
-        rnd = random.uniform(0, 1)
-        for i in range(len(fitnessDistribution)):
-            if fitnessDistribution[i] > rnd:
-                return i
-        return len(fitnessDistribution) - 1
+        if(self.selectionFunction=="tournamentSelection"):
+            contestants=random.sample(self.currentPopulation, 2)
+            return self.currentPopulation.index(self.makeTournament(contestants[0],contestants[1]))
+        else:
+            if(self.selectionFunction=="lowFitnessProportionSelection"):
+                fitnessDistribution=self.cumulativeNormalizedFitness
+            elif(self.selectionFunction=="highFitnessProportionSelection"):
+                fitnessDistribution=[1 - x for x in self.cumulativeNormalizedFitness]
+            rnd = random.uniform(0, 1)
+            for i in range(len(fitnessDistribution)):
+                if fitnessDistribution[i] > rnd:
+                    return i
+            return len(fitnessDistribution) - 1
+    
 
     def mutate(self, i):
         if self.mutationFunction=="mutateIndividualForRandom":
@@ -111,9 +118,33 @@ class Population:
             individual=self.currentPopulation[i].copy()
             conflictIndexes=self.getConflictPositions(individual)
             individual.pop(conflictIndexes[0])
-            individual.pop(conflictIndexes[1]-1)
+            individual.pop(conflictIndexes[1] - 1)
             individual=set(individual)
-        while len(individual)<self.n:
+        elif self.mutationFunction=="shiftPositionOnConflictMutation":
+            individual=self.currentPopulation[i].copy()
+            idx=self.getConflictPositions(individual)[random.randint(0,1)]
+            oldPosition=list(individual.pop(idx))
+            shiftOrientation=random.randint(0,1)
+            shiftDirection=random.choice([-1, 1])
+            individual=set(individual)
+            while len(individual)<self.n:
+                newPosition=oldPosition
+                newPosition[shiftOrientation]=(newPosition[shiftOrientation]+shiftDirection)%self.n
+                newPosition=tuple(newPosition)
+                individual.add(newPosition)
+            #for the case where all positions were lined up
+            if len(individual)<self.n:
+                newPosition=oldPosition
+                newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+shiftDirection)%self.n
+                newPosition=tuple(newPosition)
+                individual.add(newPosition) 
+        """ elif self.mutationFunction == "boundaryMutation":
+            individual = set(self.currentPopulation[i])
+            queen_to_move = random.choice(list(individual))
+            new_position = (random.randint(0, self.n - 1), random.choice([0, self.n - 1]))
+            individual.remove(queen_to_move)
+            individual.add(new_position) """
+        while len(individual) < self.n:
             x = random.randint(0, self.n-1)
             y = random.randint(0, self.n-1)
             individual.add((x, y))
@@ -125,7 +156,7 @@ class Population:
         for p1 in individual:
             for p2 in individual:
                 if(p1!=p2):
-                    fitnessCount += self.hasHorizontalConflict(p1, p2) + self.hasVerticalConflict(p1, p2) + self.hasDiagonalConflict(p1, p2)
+                    fitnessCount += hasHorizontalConflict(p1, p2) + hasVerticalConflict(p1, p2) + hasDiagonalConflict(p1, p2)
                 if fitnessCount>0:
                     return sorted([individual.index(p1), individual.index(p2)], reverse=True)
 
@@ -142,7 +173,7 @@ class Population:
         for p1 in individual:
             for p2 in individual:
                 if(p1!=p2):
-                    fitnessCount += self.hasHorizontalConflict(p1, p2) + self.hasVerticalConflict(p1, p2) + self.hasDiagonalConflict(p1, p2)
+                    fitnessCount += hasHorizontalConflict(p1, p2) + hasVerticalConflict(p1, p2) + hasDiagonalConflict(p1, p2)
         fitnessCount/=2
         if(self.bestFitness>fitnessCount):
             self.bestFitness=fitnessCount
@@ -151,32 +182,45 @@ class Population:
 
 
     def normalizeFitness(self):
-        totalFitness = sum(self.currentFitness)
+        poweredFitness = [individual ** 10 for individual in self.currentFitness]
+        totalFitness = sum(poweredFitness)
         cumulativeNormalizedFitness = []
         fit = 0
-        for fitness in self.currentFitness:
+        for fitness in poweredFitness:
             fit += fitness / totalFitness
             cumulativeNormalizedFitness.append(fit)
         return cumulativeNormalizedFitness
 
-    def hasHorizontalConflict(self, p1, p2):
-        return p1[0]==p2[0]
+    def makeTournament(self, p1,p2):
+        f1=self.getFitnessOnIndividual(p1)
+        f2=self.getFitnessOnIndividual(p2)
+        if f1<f2:
+            return p1
+        else:
+            return p2
 
-    def hasVerticalConflict(self, p1, p2):
-        return p1[1]==p2[1]
+def hasHorizontalConflict(p1, p2):
+    return p1[0]==p2[0]
 
-    def hasDiagonalConflict(self, p1, p2):
-        majorDiagonal = p1[0] - p1[1] == p2[0] - p2[1]
-        minorDiagonal = p1[0] + p1[1] == p2[0] + p2[1]
-        return majorDiagonal or minorDiagonal
-    
+def hasVerticalConflict(p1, p2):
+    return p1[1]==p2[1]
+
+def hasDiagonalConflict(p1, p2):
+    majorDiagonal = p1[0] - p1[1] == p2[0] - p2[1]
+    minorDiagonal = p1[0] + p1[1] == p2[0] + p2[1]
+    return majorDiagonal or minorDiagonal
+
 def format_time(seconds):
     td = datetime.timedelta(seconds=seconds)
-    hours = td.seconds // 3600
-    minutes = (td.seconds % 3600) // 60
-    seconds = td.seconds % 60
-    if hours==0:
-        if minutes==0:
-            return "{:d} seconds".format(seconds)
-        return "{:d} minutes, {:d} seconds".format(minutes, seconds)
-    return "{:d} hours, {:d} minutes, {:d} seconds".format(hours, minutes, seconds)
+    total_seconds = td.total_seconds()
+    hours = int(total_seconds // 3600)
+    minutes = int((total_seconds % 3600) // 60)
+    seconds = int(total_seconds % 60)
+    milliseconds = int((total_seconds - int(total_seconds)) * 1000)
+    if hours == 0:
+        if minutes == 0:
+            if seconds == 0:
+                return "{:d} milliseconds".format(milliseconds)
+            return "{:d} seconds, {:d} milliseconds".format(seconds, milliseconds)
+        return "{:d} minutes, {:d} seconds, {:d} milliseconds".format(minutes, seconds, milliseconds)
+    return "{:d} hours, {:d} minutes, {:d} seconds, {:d} milliseconds".format(hours, minutes, seconds, milliseconds)
