@@ -1,6 +1,7 @@
 import random
 import time 
 import datetime
+import os
 
 
 class Population:
@@ -42,7 +43,6 @@ class Population:
                 self.crossOver()
                 self.pickAndMutate()
                 self.generationCount+=1
-                print("Current Best Fitness: ", self.bestFitness)
             print("Best Fitness: ", self.bestFitness)
             print("n =", self.n)
             print("Population Size =", self.size)
@@ -178,6 +178,10 @@ class Population:
         if(self.bestFitness>fitnessCount):
             self.bestFitness=fitnessCount
             self.bestPosition=individual
+            clear_console()
+            print("n =", self.n)
+            self.printPosition(self.bestPosition)
+            print("Best Fitness so far ", self.bestFitness, ", at Generation ", self.generationCount)
         return int(fitnessCount)
 
 
@@ -198,6 +202,10 @@ class Population:
             return p1
         else:
             return p2
+
+def clear_console():
+    if os.name == 'nt':
+        os.system('cls')
 
 def hasHorizontalConflict(p1, p2):
     return p1[0]==p2[0]
