@@ -39,8 +39,8 @@ class Population:
             while self.generationCount<maxGenerations:
                 if self.bestFitness==0:
                     break
-                self.pickAndMutate()
                 self.crossOver()
+                self.pickAndMutate()
                 self.generationCount+=1
                 print("Current Best Fitness: ", self.bestFitness)
             print("Best Fitness: ", self.bestFitness)
