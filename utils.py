@@ -52,15 +52,27 @@ class Population:
             print("Execution time: ", format_time(time.time() - startTime))
 
     def crossOver(self):
-        if self.crossOverFunction=="crossHalf":
+        if self.crossOverFunction=="crossHalf" or self.crossOverFunction=="singlePoint":
             for _ in range(len(self.currentPopulation)):
                 first=self.pick()
                 second=self.pick()
-                newIndividuals=self.mixTwoHalves(self.currentPopulation[first], self.currentPopulation[second])
+                if self.crossOverFunction=="singlePoint":
+                    newIndividuals=self.singlePoint(self.currentPopulation[first], self.currentPopulation[second])
+                elif self.crossOverFunction=="crossHalf":
+                    newIndividuals=self.mixTwoHalves(self.currentPopulation[first], self.currentPopulation[second])
                 self.currentPopulation[first]=newIndividuals[0]
                 self.currentPopulation[second]=newIndividuals[1]
                 self.currentFitness[first]=self.getFitnessOnIndividual(self.currentPopulation[first])
                 self.currentFitness[second]=self.getFitnessOnIndividual(self.currentPopulation[second])
+
+    def singlePoint(self, first, second):
+        firstNew=[]
+        secondNew=[]
+        while len(set(firstNew))!=self.n and len(set(secondNew))!=self.n:
+            idx = random.randint(1, len(first) - 1)
+            firstNew = first[:idx] + second[idx:]
+            secondNew = first[:idx] + second[idx:]
+        return firstNew, secondNew
 
     def mixTwoHalves(self, first, second):
         firstNew=[]
@@ -110,7 +122,6 @@ class Population:
                     return i
             return len(fitnessDistribution) - 1
     
-
     def mutate(self, i):
         if self.mutationFunction=="mutateIndividualForRandom":
             individual=set()
