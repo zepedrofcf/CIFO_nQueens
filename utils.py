@@ -53,7 +53,7 @@ class Population:
 
     def crossOver(self):
         if self.crossOverFunction=="crossHalf" or self.crossOverFunction=="singlePoint":
-            for _ in range(len(self.currentPopulation)):
+            for _ in range(len(self.currentPopulation)//10):
                 first=self.pick()
                 second=self.pick()
                 if self.crossOverFunction=="singlePoint":
@@ -68,10 +68,13 @@ class Population:
     def singlePoint(self, first, second):
         firstNew=[]
         secondNew=[]
-        while len(set(firstNew))!=self.n and len(set(secondNew))!=self.n:
-            idx = random.randint(1, len(first) - 1)
+        attempts=0
+        idx = random.randint(1, len(first) - 1)
+        while len(set(firstNew))!=self.n and len(set(secondNew))!=self.n or attempts>self.n:
             firstNew = first[:idx] + second[idx:]
             secondNew = first[:idx] + second[idx:]
+            idx=(idx+1)%self.n
+            attempts+=1
         return firstNew, secondNew
 
     def mixTwoHalves(self, first, second):
@@ -121,11 +124,11 @@ class Population:
                 if fitnessDistribution[i] > rnd:
                     return i
             return len(fitnessDistribution) - 1
-    
+          
     def mutate(self, i):
-        if self.mutationFunction=="mutateIndividualForRandom":
-            individual=set()
-        elif self.mutationFunction=="mutateConflictPosition":
+#        if self.mutationFunction=="mutateIndividualForRandom":
+        individual=set()
+        if self.mutationFunction=="mutateConflictPosition":
             individual=self.currentPopulation[i].copy()
             conflictIndexes=self.getConflictPositions(individual)
             individual.pop(conflictIndexes[0])
