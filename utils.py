@@ -15,7 +15,7 @@ class Population:
         self.bestFitness=100000
         self.generationCount=0
         firstPopulation=[]
-        for _ in range(self.size):
+        while len(firstPopulation)<self.size:
             position=set()
             while len(position)<n:
                 x = random.randint(0, n-1)
@@ -41,7 +41,7 @@ class Population:
                 if self.bestFitness==0:
                     break
                 self.crossOver()
-                self.pickAndMutate()
+                self.selectAndMutate()
                 self.generationCount+=1
             print("Best Fitness: ", self.bestFitness)
             print("n =", self.n)
@@ -54,8 +54,8 @@ class Population:
     def crossOver(self):
         if self.crossOverFunction=="crossHalf" or self.crossOverFunction=="singlePoint":
             for _ in range(len(self.currentPopulation)//10):
-                first=self.pick()
-                second=self.pick()
+                first=self.select()
+                second=self.select()
                 if self.crossOverFunction=="singlePoint":
                     newIndividuals=self.singlePoint(self.currentPopulation[first], self.currentPopulation[second])
                 elif self.crossOverFunction=="crossHalf":
@@ -104,20 +104,18 @@ class Population:
                     str += "X  "
             print(str)
 
-    def pickAndMutate(self):
+    def selectAndMutate(self):
         for _ in range(len(self.currentPopulation)):
-            self.mutate(self.pick())
+            self.mutate(self.select())
             if self.bestFitness==0:
                 break
 
-    def pick(self):
-        if(self.selectionFunction=="tournamentSelection"):
+    def select(self):
+        if(self.selectionFunction=="Tournament Selection"):
             contestants=random.sample(self.currentPopulation, 2)
             return self.currentPopulation.index(self.makeTournament(contestants[0],contestants[1]))
         else:
-            if(self.selectionFunction=="lowFitnessProportionSelection"):
-                fitnessDistribution=self.cumulativeNormalizedFitness
-            elif(self.selectionFunction=="highFitnessProportionSelection"):
+            if(self.selectionFunction=="Roulette Wheel Selection"):
                 fitnessDistribution=[1 - x for x in self.cumulativeNormalizedFitness]
             rnd = random.uniform(0, 1)
             for i in range(len(fitnessDistribution)):
@@ -126,17 +124,16 @@ class Population:
             return len(fitnessDistribution) - 1
           
     def mutate(self, i):
-#        if self.mutationFunction=="mutateIndividualForRandom":
         individual=set()
-        if self.mutationFunction=="mutateConflictPosition":
+    #if self.mutationFunction=="Individual For Random":
+        if self.mutationFunction=="Conflict Position for Random":
             individual=self.currentPopulation[i].copy()
-            conflictIndexes=self.getConflictPositions(individual)
-            individual.pop(conflictIndexes[0])
-            individual.pop(conflictIndexes[1] - 1)
+            conflictIndex=self.getConflictPosition(individual)
+            individual.pop(conflictIndex)
             individual=set(individual)
-        elif self.mutationFunction=="shiftPositionOnConflictMutation":
+        elif self.mutationFunction=="Shift Position On Conflict":
             individual=self.currentPopulation[i].copy()
-            idx=self.getConflictPositions(individual)[random.randint(0,1)]
+            idx=self.getConflictPosition(individual)
             oldPosition=list(individual.pop(idx))
             shiftOrientation=random.randint(0,1)
             shiftDirection=random.choice([-1, 1])
@@ -152,12 +149,13 @@ class Population:
                 newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+shiftDirection)%self.n
                 newPosition=tuple(newPosition)
                 individual.add(newPosition) 
-        """ elif self.mutationFunction == "boundaryMutation":
-            individual = set(self.currentPopulation[i])
-            queen_to_move = random.choice(list(individual))
+        """elif self.mutationFunction == "Boundary Mutation":
+            individual = self.currentPopulation[i]
+            queen_to_move = random.choice(individual)
             new_position = (random.randint(0, self.n - 1), random.choice([0, self.n - 1]))
-            individual.remove(queen_to_move)
-            individual.add(new_position) """
+            if new_position not in individual:
+                individual.pop(individual.index(queen_to_move))
+                individual.append(new_position)"""
         while len(individual) < self.n:
             x = random.randint(0, self.n-1)
             y = random.randint(0, self.n-1)
@@ -165,14 +163,14 @@ class Population:
         self.currentPopulation[i]=list(individual)
         self.currentFitness[i]=self.getFitnessOnIndividual(self.currentPopulation[i])
             
-    def getConflictPositions(self, individual):
+    def getConflictPosition(self, individual):
         fitnessCount=0
         for p1 in individual:
             for p2 in individual:
                 if(p1!=p2):
                     fitnessCount += hasHorizontalConflict(p1, p2) + hasVerticalConflict(p1, p2) + hasDiagonalConflict(p1, p2)
                 if fitnessCount>0:
-                    return sorted([individual.index(p1), individual.index(p2)], reverse=True)
+                    return random.choice([individual.index(p1), individual.index(p2)])
 
     def getFitnessOnPopulation(self):
         populationFitness=[]
