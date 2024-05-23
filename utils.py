@@ -52,43 +52,43 @@ class Population:
             print("Execution time: ", format_time(time.time() - startTime))
 
     def crossOver(self):
-        if self.crossOverFunction=="crossHalf" or self.crossOverFunction=="singlePoint":
+        if self.crossOverFunction=="crossHalf" or self.crossOverFunction=="Single Point":
             for _ in range(len(self.currentPopulation)//10):
-                first=self.select()
-                second=self.select()
-                if self.crossOverFunction=="singlePoint":
-                    newIndividuals=self.singlePoint(self.currentPopulation[first], self.currentPopulation[second])
+                firstParent=self.select()
+                secondParent=self.select()
+                if self.crossOverFunction=="Single Point":
+                    newIndividuals=self.singlePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
                 elif self.crossOverFunction=="crossHalf":
-                    newIndividuals=self.mixTwoHalves(self.currentPopulation[first], self.currentPopulation[second])
-                self.currentPopulation[first]=newIndividuals[0]
-                self.currentPopulation[second]=newIndividuals[1]
-                self.currentFitness[first]=self.getFitnessOnIndividual(self.currentPopulation[first])
-                self.currentFitness[second]=self.getFitnessOnIndividual(self.currentPopulation[second])
+                    newIndividuals=self.mixTwoHalves(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                self.currentPopulation[firstParent]=newIndividuals[0]
+                self.currentPopulation[secondParent]=newIndividuals[1]
+                self.currentFitness[firstParent]=self.getFitnessOnIndividual(self.currentPopulation[firstParent])
+                self.currentFitness[secondParent]=self.getFitnessOnIndividual(self.currentPopulation[secondParent])
 
-    def singlePoint(self, first, second):
-        firstNew=[]
-        secondNew=[]
+    def singlePoint(self, firstParent, secondParent):
+        firstOffspring=[]
+        secondOffspring=[]
         attempts=0
-        idx = random.randint(1, len(first) - 1)
-        while len(set(firstNew))!=self.n and len(set(secondNew))!=self.n or attempts>self.n:
-            firstNew = first[:idx] + second[idx:]
-            secondNew = first[:idx] + second[idx:]
+        idx = random.randint(1, len(firstParent) - 1)
+        while len(set(firstOffspring))!=self.n and len(set(secondOffspring))!=self.n or attempts>self.n:
+            firstOffspring = firstParent[:idx] + secondParent[idx:]
+            secondOffspring = firstParent[:idx] + secondParent[idx:]
             idx=(idx+1)%self.n
             attempts+=1
-        return firstNew, secondNew
+        return firstOffspring, secondOffspring
 
-    def mixTwoHalves(self, first, second):
-        firstNew=[]
-        secondNew=[]
-        all=sorted(first+second)            
-        firstNew=[]
-        secondNew=[]
+    def mixTwoHalves(self, firstParent, secondParent):
+        firstOffspring=[]
+        secondOffspring=[]
+        all=sorted(firstParent+secondParent)            
+        firstOffspring=[]
+        secondOffspring=[]
         for i in range(len(all)):
             if(i%2==0):
-                firstNew.append(all[i])
+                firstOffspring.append(all[i])
             else:
-                secondNew.append(all[i])
-        return [list(firstNew), list(secondNew)]
+                secondOffspring.append(all[i])
+        return [list(firstOffspring), list(secondOffspring)]
 
     def printPosition(self, pos):
         for i in range(self.n):
@@ -126,12 +126,12 @@ class Population:
     def mutate(self, i):
         individual=set()
     #if self.mutationFunction=="Individual For Random":
-        if self.mutationFunction=="Conflict Position for Random":
+        if self.mutationFunction=="Position with conflict for random":
             individual=self.currentPopulation[i].copy()
             conflictIndex=self.getConflictPosition(individual)
             individual.pop(conflictIndex)
             individual=set(individual)
-        elif self.mutationFunction=="Shift Position On Conflict":
+        elif self.mutationFunction=="Shift Coordinate on Position with Conflict":
             individual=self.currentPopulation[i].copy()
             idx=self.getConflictPosition(individual)
             oldPosition=list(individual.pop(idx))

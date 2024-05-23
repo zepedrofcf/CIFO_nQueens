@@ -3,8 +3,8 @@ import random
 
 #these are the developed functions
 selectionFunctions=["Tournament Selection", "Roulette Wheel Selection"]
-mutationFunctions=["Conflict Position for Random", "Individual For Random", "Shift Position On Conflict", "Boundary Mutation"]
-crossOverFunctions=["crossHalf", "singlePoint"]
+mutationFunctions=["Position with conflict for random", "Individual For Random", "Shift Coordinate on Position with Conflict", "Boundary Mutation"]
+crossOverFunctions=["crossHalf", "Single Point"]
 
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
