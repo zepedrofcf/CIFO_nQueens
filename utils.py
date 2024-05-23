@@ -136,17 +136,16 @@ class Population:
             idx=self.getConflictPosition(individual)
             oldPosition=list(individual.pop(idx))
             shiftOrientation=random.randint(0,1)
-            shiftDirection=random.choice([-1, 1])
             individual=set(individual)
             while len(individual)<self.n:
                 newPosition=oldPosition
-                newPosition[shiftOrientation]=(newPosition[shiftOrientation]+shiftDirection)%self.n
+                newPosition[shiftOrientation]=(newPosition[shiftOrientation]+1)%self.n
                 newPosition=tuple(newPosition)
                 individual.add(newPosition)
             #for the case where all positions were lined up
             if len(individual)<self.n:
                 newPosition=oldPosition
-                newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+shiftDirection)%self.n
+                newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+1)%self.n
                 newPosition=tuple(newPosition)
                 individual.add(newPosition) 
         """elif self.mutationFunction == "Boundary Mutation":
