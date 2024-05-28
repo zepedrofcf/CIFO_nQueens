@@ -26,35 +26,38 @@ solveNQueens(150, 6, 7500, selectionFunctions[1], mutationFunctions[2], crossOve
 #### VARIABLE PARAMETERS: "n" and "populationSize" ####
 
 '''
-def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
-    population = Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
+def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction, elitism, elitismRate=0.1):
+    population = Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism, elitismRate)
     executionTime = population.solve(maxGenerations)
-    return executionTime  # Return execution time
+    return executionTime     # Return execution time
 
-def Statistics(populationSizes, maxGenerations, selectionFunction, mutationFunction, crossOverFunction, n_values, num_runs=30):
-    results = {size: {} for size in populationSizes}
+def Statistics(populationSizes, maxGenerations, selectionFunction, mutationFunction, crossOverFunction, n_values, elitismoption, num_runs=30):
+    results = {elitism: {size: {} for size in populationSizes} for elitism in elitismoption}
 
-    for populationSize in populationSizes:
-        for n in n_values:
-            total_time = 0
-            for _ in range(num_runs):
-                executionTime = solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction)
-                if executionTime is not None:
-                    total_time += executionTime
-            average_time = total_time / num_runs
-            results[populationSize][n] = average_time
-            print(f"Average time for n={n} with population size {populationSize}: {average_time:.4f} seconds")
+    for elitism in elitismoption:
+        for populationSize in populationSizes:
+            for n in n_values:
+                total_time = 0
+                for _ in range(num_runs):
+                    executionTime = solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction, elitism)
+                    if executionTime is not None:
+                        total_time += executionTime
+                average_time = total_time / num_runs
+                results[elitism][populationSize][n] = average_time
+                print(f"Elitism {elitism}: Average time for n={n} with population size {populationSize}: {average_time:.4f} seconds")
 
     return results
 
 def plotResults(results):
     plt.figure(figsize=(9, 6))
-    colors = ['b', 'g', 'r', 'c']  # Define colors for different population sizes
+    colors = ['b', 'g', 'r', 'c']  # Define colors for different elitism options
 
-    for i, (pop_size, pop_results) in enumerate(results.items()):
-        n_values = sorted(pop_results.keys())
-        average_times = [pop_results[n] for n in n_values]
-        plt.plot(n_values, average_times, marker='o', color=colors[i % len(colors)], label=f'Population Size: {pop_size}')
+    for elitism, elitism_results in results.items():
+        for pop_size, pop_results in elitism_results.items():
+            n_values = sorted(pop_results.keys())
+            average_times = [pop_results[n] for n in n_values]
+            plt.plot(n_values, average_times, marker='o', color=colors[len(plt.gca().lines) % len(colors)],
+                     label=f'Elitism: {elitism}, Population Size: {pop_size}')
 
     plt.xlabel('Board Size (n)')
     plt.ylabel('Average Time to Solve (seconds)')
@@ -66,8 +69,9 @@ def plotResults(results):
 
 
 n_values = range(4, 7)   # only from 4 onwards
-populationSizes = [150, 200, 250]
-results = Statistics(populationSizes, 7000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[1], n_values)
+populationSizes = [200]
+elitismoption = [False, True]
+results = Statistics(populationSizes, 8000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[1], n_values, elitismoption=elitismoption)
 plotResults(results)
 '''
 

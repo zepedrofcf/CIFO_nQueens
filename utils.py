@@ -5,12 +5,14 @@ import os
 
 
 class Population:
-    def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction):
+    def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, elitismRate=0.1):
         self.size = size
         self.n = n
         self.selectionFunction=selectionFunction
         self.mutationFunction=mutationFunction
         self.crossOverFunction=crossOverFunction
+        self.elitismEnabled = elitism      # Set elitism True or False
+        self.elitismRate = elitismRate     # Fraction of pop kept
         self.bestPosition=[]
         self.bestFitness=100000
         self.generationCount=0
@@ -37,11 +39,15 @@ class Population:
             return
         else:
             self.getFitnessOnPopulation()
-            while self.generationCount<maxGenerations:
+            while self.generationCount < maxGenerations:
                 if self.bestFitness==0:
                     break
+                if self.elitismEnabled:
+                    best = self.getbest()
                 self.crossOver()
                 self.selectAndMutate()
+                if self.elitismEnabled:
+                    self.reintroducebest(best)
                 self.generationCount+=1
             #print("Best Fitness: ", self.bestFitness)
             #print("n =", self.n)
@@ -53,9 +59,23 @@ class Population:
             print("Execution time: ", format_time(executionTime))
             return executionTime
 
+    def getbest(self):
+        numbest = int(self.elitismRate * self.size)
+        sortedPopulation = sorted(zip(self.currentPopulation, self.currentFitness), key=lambda x: x[1])
+        return [individual for individual, _ in sortedPopulation[:numbest]]
+
+    def reintroducebest(self, best):
+        numbest = len(best)
+        remaining_population_size = self.size - numbest
+        self.currentPopulation[:numbest] = best
+        for i in range(numbest):
+            rand_individual = random.choice(self.currentPopulation[numbest:])
+            self.currentPopulation[i] = rand_individual
+            self.currentFitness[i] = self.getFitnessOnIndividual(best[i])
+
     def crossOver(self):
         if self.crossOverFunction == "crossHalf" or self.crossOverFunction == "Single Point":
-            for _ in range(len(self.currentPopulation)):
+            for _ in range(len(self.currentPopulation) - len(self.getbest())):
                 firstParent = self.select()
                 secondParent = self.select()
                 if self.crossOverFunction == "Single Point":
@@ -109,9 +129,10 @@ class Population:
             print(str)
 
     def selectAndMutate(self):
-        for _ in range(len(self.currentPopulation)):
+        numbest = len(self.getbest())
+        for _ in range(self.size - numbest):
             self.mutate(self.select())
-            if self.bestFitness==0:
+            if self.bestFitness == 0:
                 break
 
     def select(self):
