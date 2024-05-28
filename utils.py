@@ -2,7 +2,7 @@ import random
 import time 
 import datetime
 import os
-
+from random import sample, uniform
 
 class Population:
     def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, elitismRate=0.1):
@@ -73,33 +73,24 @@ class Population:
             self.currentPopulation[i] = rand_individual
             self.currentFitness[i] = self.getFitnessOnIndividual(best[i])
 
-    def crossOver(self):
-        if self.crossOverFunction == "crossHalf" or self.crossOverFunction == "Single Point":
-            for _ in range(len(self.currentPopulation) - len(self.getbest())):
+        def crossOver(self):
+            for _ in range(len(self.currentPopulation)):
                 firstParent = self.select()
                 secondParent = self.select()
-                if self.crossOverFunction == "Single Point":
-                    newIndividuals = self.singlePoint(self.currentPopulation[firstParent],
-                                                      self.currentPopulation[secondParent])
-                elif self.crossOverFunction == "crossHalf":
-                    newIndividuals = self.mixTwoHalves(self.currentPopulation[firstParent],
-                                                       self.currentPopulation[secondParent])
-                self.currentPopulation[firstParent] = newIndividuals[0]
-                self.currentPopulation[secondParent] = newIndividuals[1]
-                self.currentFitness[firstParent] = self.getFitnessOnIndividual(self.currentPopulation[firstParent])
-                self.currentFitness[secondParent] = self.getFitnessOnIndividual(self.currentPopulation[secondParent])
-
-    def singlePoint(self, firstParent, secondParent):
-        firstOffspring=[]
-        secondOffspring=[]
-        attempts=0
-        idx = random.randint(1, len(firstParent) - 1)
-        while len(set(firstOffspring))!=self.n and len(set(secondOffspring))!=self.n or attempts>self.n:
-            firstOffspring = firstParent[:idx] + secondParent[idx:]
-            secondOffspring = firstParent[:idx] + secondParent[idx:]
-            idx=(idx+1)%self.n
-            attempts+=1
-        return firstOffspring, secondOffspring
+                if self.crossOverFunction == "crossHalf":
+                    newIndividuals = self.mixTwoHalves(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                elif self.crossOverFunction == "crossSinglePoint":
+                    newIndividuals = self.SinglePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                elif self.crossOverFunction == "crossCycle":
+                    newIndividuals = self.Cycle(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                elif self.crossOverFunction == "crossPartialMatched":
+                    newIndividuals = self.PartialMatched(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                elif self.crossOverFunction == "crossGeometricSemantic":
+                    newIndividuals = self.GeometricSemantic(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+            self.currentPopulation[firstParent] = newIndividuals[0]
+            self.currentPopulation[secondParent] = newIndividuals[1]
+            self.currentFitness[firstParent] = self.getFitnessOnIndividual(self.currentPopulation[firstParent])
+            self.currentFitness[secondParent] = self.getFitnessOnIndividual(self.currentPopulation[secondParent])
 
     def mixTwoHalves(self, firstParent, secondParent):
         firstOffspring=[]
@@ -113,6 +104,93 @@ class Population:
             else:
                 secondOffspring.append(all[i])
         return [list(firstOffspring), list(secondOffspring)]
+
+    def SinglePoint(self, firstParent, secondParent):
+        firstOffspring = []
+        secondOffspring = []
+        attempts = 0
+        idx = random.randint(1, len(firstParent) - 1)
+        while len(set(firstOffspring)) != self.n and len(set(secondOffspring)) != self.n or attempts > self.n:
+            firstOffspring = firstParent[:idx] + secondParent[idx:]
+            secondOffspring = firstParent[:idx] + secondParent[idx:]
+            idx = (idx + 1) % self.n
+            attempts += 1
+        return firstOffspring, secondOffspring
+
+
+    def Cycle(self, firstParent, secondParent):
+        size = len(firstParent)
+        firstOffspring = [None]*size
+        secondOffspring = [None]*size
+
+        while None in firstOffspring:
+            index = firstOffspring.index(None)
+            val1 = firstParent[index]
+            val2 = secondParent[index]
+            while val1 != val2:
+                firstOffspring[index] = firstParent[index]
+                secondOffspring[index] = secondParent[index]
+                val2 = secondParent[index]
+                if val2 in firstParent:
+                    index = firstParent.index(val2)
+                else:
+                    val1 = val2
+
+            for element in firstOffspring:
+                if element is None:
+                    index = firstOffspring.index(None)
+                    if firstOffspring[index] is None:
+                        firstOffspring[index] = secondParent[index]
+                        secondOffspring[index] = firstParent[index]
+
+        return firstOffspring, secondOffspring
+
+    def PartialMatched(self, firstParent, secondParent):
+        start = sample(range(len(firstParent)),2)
+        start.sort()
+
+        def PartialMatched_offspring(x,y):
+            startNew = [None]*len(x)
+            startNew[start[0]:start[1]] = x[start[0]:start[1]]
+            list = set(y[start[0]:start[1]]) - set(x[start[0]:start[1]])
+
+            for i in list:
+                temp = x[y.index(i)]
+                if temp in y:
+                    index = y.index(temp)
+                    while startNew[index] is not None:
+                        temp = x[index]
+                        if temp in y:
+                            index = y.index(temp)
+                    startNew[index] = i
+
+            while None in startNew:
+                index = startNew.index(None)
+                startNew[index] = y[index]
+
+            return startNew
+
+        firstOffspring, secondOffspring = PartialMatched_offspring(firstParent, secondParent), PartialMatched_offspring(secondParent, firstParent)
+
+        return firstOffspring, secondOffspring
+
+    def GeometricSemantic(self, firstParent, secondParent):
+        firstOffspring = [None]*len(firstParent)
+        secondOffspring = [None]*len(firstParent)
+        for i in range(len(firstParent)):
+            r1 = uniform(0,1)
+            r2 = uniform(0,1)
+            firstOffspring[i] = (
+                float(firstParent[i][0]) * r1 + (1 - r1) * float(secondParent[i][0]),
+                float(firstParent[i][1]) * r1 + (1 - r1) * float(secondParent[i][1])
+            )
+            secondOffspring[i] = (
+                float(firstParent[i][0]) * r2 + (1 - r2) * float(secondParent[i][0]),
+                float(firstParent[i][1]) * r2 + (1 - r2) * float(secondParent[i][1])
+            )
+
+        return firstOffspring, secondOffspring
+
 
     def printPosition(self, pos):
         for i in range(self.n):
