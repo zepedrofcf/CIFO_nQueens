@@ -11,7 +11,7 @@ crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometr
 
 
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
-    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
+    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True)
     population.solve(maxGenerations)
 
 solveNQueens(150, 8, 1000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[0])

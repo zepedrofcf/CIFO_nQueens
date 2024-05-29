@@ -40,14 +40,16 @@ class Population:
             print("No solution")
             return
         else:
-            self.getFitnessOnPopulation()
             while self.generationCount < maxGenerations:
+                self.getFitnessOnPopulation()
+                self.doSelectionOfPopulation()
                 if self.bestFitness==0:
                     break              
                 self.crossOver()
                 if self.elitismEnabled:
                     best = self.getbest()
                 self.selectAndMutate()
+                self.getFitnessOnPopulation()
                 if self.elitismEnabled:
                     self.reintroduceBest(best)
                 self.generationCount+=1
@@ -59,10 +61,14 @@ class Population:
             #self.printPosition(self.bestPosition)
             executionTime = time.time() - startTime
             print("Execution time: ", format_time(executionTime))
-            print(self.crossOverFunction)
-            print("same: ", self.same, "not same: ", self.notSame)
-            print("percent of usefull crossOvers: ", ((self.notSame/(self.same+self.notSame))*100), "%")
+            print("%"," of usefull crossOvers: ", ((self.notSame/(self.same+self.notSame))*100), "%")
             return executionTime
+
+    def doSelectionOfPopulation(self):
+        newPopulation=[]
+        for _ in range(len(self.currentPopulation)):
+            newPopulation.append(self.currentPopulation[self.select()])
+        self.currentPopulation=newPopulation
 
     def getbest(self):
         numbest = int(self.elitismRate * self.size)
@@ -79,7 +85,7 @@ class Population:
             self.currentFitness[i] = self.getFitnessOnIndividual(best[i])
 
     def crossOver(self):
-        for _ in range(len(self.currentPopulation)):
+        for _ in range(len(self.currentPopulation)//2):
             firstParent = self.select()
             secondParent = self.select()
             count=0
@@ -88,7 +94,7 @@ class Population:
                 count+=1
             #print(count)
             if self.crossOverFunction == "crossHalf":
-                newIndividuals = self.mixTwoHalves(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                newIndividuals = self.crossHalf(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossSinglePoint":
                 newIndividuals = self.singlePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossCycle":
@@ -102,7 +108,7 @@ class Population:
         self.currentFitness[firstParent] = self.getFitnessOnIndividual(self.currentPopulation[firstParent])
         self.currentFitness[secondParent] = self.getFitnessOnIndividual(self.currentPopulation[secondParent])
 
-    def mixTwoHalves(self, firstParent, secondParent):
+    def crossHalf(self, firstParent, secondParent):
         firstOffspring=[]
         secondOffspring=[]
         all=sorted(firstParent+secondParent)
@@ -279,13 +285,6 @@ class Population:
                 newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+1)%self.n
                 newPosition=tuple(newPosition)
                 individual.add(newPosition)
-        """elif self.mutationFunction == "Boundary Mutation":
-            individual = self.currentPopulation[i]
-            queen_to_move = random.choice(individual)
-            new_position = (random.randint(0, self.n - 1), random.choice([0, self.n - 1]))
-            if new_position not in individual:
-                individual.pop(individual.index(queen_to_move))
-                individual.append(new_position)"""
         while len(individual) < self.n:
             x = random.randint(0, self.n-1)
             y = random.randint(0, self.n-1)
@@ -327,7 +326,7 @@ class Population:
 
 
     def normalizeFitness(self):
-        poweredFitness = [individual ** 10 for individual in self.currentFitness]
+        poweredFitness = [individual for individual in self.currentFitness]
         totalFitness = sum(poweredFitness)
         cumulativeNormalizedFitness = []
         fit = 0
