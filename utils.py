@@ -17,6 +17,8 @@ class Population:
         self.bestFitness=100000
         self.generationCount=0
         firstPopulation=[]
+        self.same=0
+        self.notSame=0
         for _ in range(self.size):
             position=set()
             while len(position)<n:
@@ -41,13 +43,13 @@ class Population:
             self.getFitnessOnPopulation()
             while self.generationCount < maxGenerations:
                 if self.bestFitness==0:
-                    break
+                    break              
+                self.crossOver()
                 if self.elitismEnabled:
                     best = self.getbest()
-                self.crossOver()
                 self.selectAndMutate()
                 if self.elitismEnabled:
-                    self.reintroducebest(best)
+                    self.reintroduceBest(best)
                 self.generationCount+=1
             #print("Best Fitness: ", self.bestFitness)
             #print("n =", self.n)
@@ -57,6 +59,9 @@ class Population:
             #self.printPosition(self.bestPosition)
             executionTime = time.time() - startTime
             print("Execution time: ", format_time(executionTime))
+            print(self.crossOverFunction)
+            print("same: ", self.same, "not same: ", self.notSame)
+            print("percent of usefull crossOvers: ", ((self.notSame/(self.same+self.notSame))*100), "%")
             return executionTime
 
     def getbest(self):
@@ -64,7 +69,7 @@ class Population:
         sortedPopulation = sorted(zip(self.currentPopulation, self.currentFitness), key=lambda x: x[1])
         return [individual for individual, _ in sortedPopulation[:numbest]]
 
-    def reintroducebest(self, best):
+    def reintroduceBest(self, best):
         numbest = len(best)
         remaining_population_size = self.size - numbest
         self.currentPopulation[:numbest] = best
@@ -77,10 +82,15 @@ class Population:
         for _ in range(len(self.currentPopulation)):
             firstParent = self.select()
             secondParent = self.select()
+            count=0
+            while firstParent==secondParent:
+                secondParent=self.select()
+                count+=1
+            #print(count)
             if self.crossOverFunction == "crossHalf":
                 newIndividuals = self.mixTwoHalves(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossSinglePoint":
-                newIndividuals = self.SinglePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                newIndividuals = self.singlePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossCycle":
                 newIndividuals = self.Cycle(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             #elif self.crossOverFunction == "crossPartialMatched":
@@ -103,18 +113,32 @@ class Population:
                 firstOffspring.append(all[i])
             else:
                 secondOffspring.append(all[i])
+        if(firstParent==firstOffspring and secondParent==secondOffspring):
+            self.same+=1
+        else:
+            self.notSame+=1
         return [list(firstOffspring), list(secondOffspring)]
 
-    def SinglePoint(self, firstParent, secondParent):
+    def singlePoint(self, firstParent, secondParent):
         firstOffspring = []
         secondOffspring = []
         attempts = 0
-        idx = random.randint(1, len(firstParent) - 1)
-        while len(set(firstOffspring)) != self.n and len(set(secondOffspring)) != self.n or attempts > self.n:
+        idx = random.randint(1, len(firstParent) - 2)
+        while len(set(firstOffspring)) != self.n and len(set(secondOffspring)) != self.n:
             firstOffspring = firstParent[:idx] + secondParent[idx:]
-            secondOffspring = firstParent[:idx] + secondParent[idx:]
-            idx = (idx + 1) % self.n
+            secondOffspring = secondParent[:idx] + firstParent[idx:]
+            idx = ((idx) % (self.n-1)) + 1
             attempts += 1
+            if attempts==self.n-1:
+                firstParent==firstOffspring
+                secondParent==secondOffspring
+                break
+        if(firstParent==firstOffspring and secondParent==secondOffspring):
+            self.same+=1
+            #print("first par", firstParent, "second par",secondParent)
+            #print("first off", firstOffspring, "second off",  secondOffspring)
+        else:
+            self.notSame+=1
         return firstOffspring, secondOffspring
 
 
@@ -122,7 +146,6 @@ class Population:
         size = len(firstParent)
         firstOffspring = [None]*size
         secondOffspring = [None]*size
-
         while None in firstOffspring:
             index = firstOffspring.index(None)
             val1 = firstParent[index]
@@ -135,13 +158,16 @@ class Population:
                     index = firstParent.index(val2)
                 else:
                     val1 = val2
-
             for element in firstOffspring:
                 if element is None:
                     index = firstOffspring.index(None)
                     if firstOffspring[index] is None:
                         firstOffspring[index] = secondParent[index]
                         secondOffspring[index] = firstParent[index]
+        if(firstParent==firstOffspring and secondParent==secondOffspring):
+            self.same+=1
+        else:
+            self.notSame+=1
 
         return firstOffspring, secondOffspring
 
@@ -167,7 +193,6 @@ class Population:
             while None in startNew:
                 index = startNew.index(None)
                 startNew[index] = y[index]
-
             return startNew
 
         firstOffspring, secondOffspring = PartialMatched_offspring(firstParent, secondParent), PartialMatched_offspring(secondParent, firstParent)
@@ -188,7 +213,10 @@ class Population:
                 float(firstParent[i][0]) * r2 + (1 - r2) * float(secondParent[i][0]),
                 float(firstParent[i][1]) * r2 + (1 - r2) * float(secondParent[i][1])
             )
-
+        if(firstParent==firstOffspring and secondParent==secondOffspring):
+            self.same+=1
+        else:
+            self.notSame+=1
         return firstOffspring, secondOffspring
 
 
@@ -221,10 +249,10 @@ class Population:
             if(self.selectionFunction=="Roulette Wheel Selection"):
                 fitnessDistribution=[1 - x for x in self.cumulativeNormalizedFitness]
             rnd = random.uniform(0, 1)
-            for i in range(len(fitnessDistribution)):
-                if fitnessDistribution[i] > rnd:
-                    return i
-            return len(fitnessDistribution) - 1
+            i=0
+            while rnd < fitnessDistribution[i+1] and i<len(fitnessDistribution):
+                i+=1
+            return i
 
     def mutate(self, i):
         individual=set()
@@ -279,8 +307,7 @@ class Population:
         for position in self.currentPopulation:
             populationFitness.append(self.getFitnessOnIndividual(position))
         self.currentFitness=populationFitness
-        self.cumulativeNormalizedFitness=self.normalizeFitness()
-        
+        self.cumulativeNormalizedFitness=self.normalizeFitness() 
         
     def getFitnessOnIndividual(self, individual):
         fitnessCount=0

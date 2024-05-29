@@ -7,15 +7,14 @@ import matplotlib.patches as mpatches
 #these are the developed functions
 selectionFunctions=["Tournament Selection", "Roulette Wheel Selection"]
 mutationFunctions=["Position with conflict for random", "Individual For Random", "Shift Coordinate on Position with Conflict"]
-crossOverFunctions=["crossHalf","crossSinglePoint", "crossCycle", "crossGeometricSemantic"]
+crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometricSemantic"]
 
-'''
+
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
     population.solve(maxGenerations)
 
-solveNQueens(150, 7, 7500, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[0])
-'''
+solveNQueens(150, 8, 1000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[0])
 
 
 
