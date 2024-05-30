@@ -19,13 +19,14 @@ class Population:
         firstPopulation=[]
         self.same=0
         self.notSame=0
-        for _ in range(self.size):
-            position=set()
-            while len(position)<n:
-                x = random.randint(0, n-1)
-                y = random.randint(0, n-1)
-                position.add((x, y))
-            firstPopulation.append(list(position))
+        for indNumber in range(self.size):
+            position=[]
+            for i in range(n):
+                if indNumber%2==0:
+                    position.append((random.randint(0, n-1),i))
+                else:
+                    position.append((i,random.randint(0, n-1)))
+            firstPopulation.append(position)
         self.currentPopulation=firstPopulation
         self.currentFitness=[]
         self.cumulativeNormalizedFitness=[]
@@ -262,7 +263,6 @@ class Population:
 
     def mutate(self, i):
         individual=set()
-    #if self.mutationFunction=="Individual For Random":
         if self.mutationFunction=="Position with conflict for random":
             individual=self.currentPopulation[i].copy()
             conflictIndex=self.getConflictPosition(individual)
@@ -285,10 +285,8 @@ class Population:
                 newPosition[(shiftOrientation+1)%2]=(newPosition[shiftOrientation]+1)%self.n
                 newPosition=tuple(newPosition)
                 individual.add(newPosition)
-        while len(individual) < self.n:
-            x = random.randint(0, self.n-1)
-            y = random.randint(0, self.n-1)
-            individual.add((x, y))
+        while len(individual)<self.n:
+            individual.add((random.randint(0, self.n-1), random.randint(0, self.n-1)))
         self.currentPopulation[i]=list(individual)
         self.currentFitness[i]=self.getFitnessOnIndividual(self.currentPopulation[i])
 

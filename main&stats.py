@@ -14,7 +14,7 @@ def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationF
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True)
     population.solve(maxGenerations)
 
-solveNQueens(150, 8, 1000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[0])
+solveNQueens(100, 11, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[0])
 
 
 
