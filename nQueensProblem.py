@@ -20,14 +20,11 @@ class Population:
         self.same=0
         self.notSame=0
         self.startTime = time.time()
-        for indNumber in range(self.populationSize):
-            position=[]
-            for i in range(n):
-                if indNumber%2==0:
-                    position.append((random.randint(0, n-1),i))
-                else:
-                    position.append((i,random.randint(0, n-1)))
-            firstPopulation.append(position)
+        for _ in range(self.populationSize):
+            position=set()
+            while len(position)< n:
+                position.add((random.randint(0, n-1), random.randint(0, n-1)))
+            firstPopulation.append(list(position))
         self.currentPopulation=firstPopulation
         self.currentFitness=[]
         self.cumulativeNormalizedFitness=[]
@@ -82,7 +79,7 @@ class Population:
         return [individual for individual, _ in sortedPopulation[:numbest]]
 
     def crossOver(self):
-        for _ in range(len(self.currentPopulation)//2):
+        for _ in range(len(self.currentPopulation)):
             firstParent = self.select()
             secondParent = self.select()
             count=0
