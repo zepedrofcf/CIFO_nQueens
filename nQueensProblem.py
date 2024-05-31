@@ -5,14 +5,14 @@ import os
 from random import sample, uniform
 
 class Population:
-    def __init__(self, populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, elitismRate=0.1):
+    def __init__(self, populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, eliteProportion=0.1):
         self.populationSize = populationSize
         self.n = n
         self.selectionFunction=selectionFunction
         self.mutationFunction=mutationFunction
         self.crossOverFunction=crossOverFunction
         self.elitismEnabled = elitism      # Set elitism True or False
-        self.elitismRate = elitismRate     # Fraction of pop kept
+        self.eliteProportion = eliteProportion     # Fraction of pop kept
         self.bestPosition=[]
         self.bestFitness=100000
         self.generationCount=0
@@ -31,6 +31,7 @@ class Population:
         self.currentPopulation=firstPopulation
         self.currentFitness=[]
         self.cumulativeNormalizedFitness=[]
+        self.nextPopulation=[]
     
     def solve(self, maxGenerations):
         if self.n==1:
@@ -41,18 +42,18 @@ class Population:
             print("No solution")
             return
         else:
+            self.getFitnessOnPopulation()
             while self.generationCount < maxGenerations:
-                self.getFitnessOnPopulation()
                 self.doSelectionOfPopulation()
                 if self.bestFitness==0:
                     break              
                 self.crossOver()
+                self.nextPopulation=[]
                 if self.elitismEnabled:
-                    best = self.getbest()
+                    self.nextPopulation = self.getBest()
                 self.selectAndMutate()
+                self.currentPopulation=self.nextPopulation
                 self.getFitnessOnPopulation()
-                if self.elitismEnabled:
-                    self.reintroduceBest(best)
                 self.generationCount+=1
             #print("Best Fitness: ", self.bestFitness)
             #print("n =", self.n)
@@ -75,19 +76,10 @@ class Population:
             newPopulation.append(self.currentPopulation[self.select()])
         self.currentPopulation=newPopulation
 
-    def getbest(self):
-        numbest = int(self.elitismRate * self.populationSize)
+    def getBest(self):
+        numbest = int(self.eliteProportion * self.populationSize)
         sortedPopulation = sorted(zip(self.currentPopulation, self.currentFitness), key=lambda x: x[1])
         return [individual for individual, _ in sortedPopulation[:numbest]]
-
-    def reintroduceBest(self, best):
-        numbest = len(best)
-        remaining_population_size = self.populationSize - numbest
-        self.currentPopulation[:numbest] = best
-        for i in range(numbest):
-            rand_individual = random.choice(self.currentPopulation[numbest:])
-            self.currentPopulation[i] = rand_individual
-            self.currentFitness[i] = self.getFitnessOnIndividual(best[i])
 
     def crossOver(self):
         for _ in range(len(self.currentPopulation)//2):
@@ -103,9 +95,7 @@ class Population:
             elif self.crossOverFunction == "crossSinglePoint":
                 newIndividuals = self.singlePoint(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossCycle":
-                newIndividuals = self.Cycle(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
-            #elif self.crossOverFunction == "crossPartialMatched":
-                #newIndividuals = self.PartialMatched(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
+                newIndividuals = self.cycleCrossOver(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
             elif self.crossOverFunction == "crossGeometricSemantic":
                 newIndividuals = self.GeometricSemantic(self.currentPopulation[firstParent], self.currentPopulation[secondParent])
         self.currentPopulation[firstParent] = newIndividuals[0]
@@ -153,7 +143,7 @@ class Population:
         return firstOffspring, secondOffspring
 
 
-    def Cycle(self, firstParent, secondParent):
+    def cycleCrossOver(self, firstParent, secondParent):
         size = len(firstParent)
         firstOffspring = [None]*size
         secondOffspring = [None]*size
@@ -179,34 +169,6 @@ class Population:
             self.same+=1
         else:
             self.notSame+=1
-
-        return firstOffspring, secondOffspring
-
-    def PartialMatched(self, firstParent, secondParent):
-        start = sample(range(len(firstParent)),2)
-        start.sort()
-
-        def PartialMatched_offspring(x,y):
-            startNew = [None]*len(x)
-            startNew[start[0]:start[1]] = x[start[0]:start[1]]
-            list = set(y[start[0]:start[1]]) - set(x[start[0]:start[1]])
-
-            for i in list:
-                temp = x[y.index(i)]
-                if temp in y:
-                    index = y.index(temp)
-                    while startNew[index] is not None:
-                        temp = x[index]
-                        if temp in y:
-                            index = y.index(temp)
-                    startNew[index] = i
-
-            while None in startNew:
-                index = startNew.index(None)
-                startNew[index] = y[index]
-            return startNew
-
-        firstOffspring, secondOffspring = PartialMatched_offspring(firstParent, secondParent), PartialMatched_offspring(secondParent, firstParent)
 
         return firstOffspring, secondOffspring
 
@@ -252,8 +214,7 @@ class Population:
             print(str)
 
     def selectAndMutate(self):
-        numbest = len(self.getbest())
-        for _ in range(self.populationSize - numbest):
+        while len(self.nextPopulation) < self.populationSize:
             self.mutate(self.select())
             if self.bestFitness == 0:
                 break
@@ -297,8 +258,8 @@ class Population:
                 individual.add(newPosition)
         while len(individual)<self.n:
             individual.add((random.randint(0, self.n-1), random.randint(0, self.n-1)))
-        self.currentPopulation[i]=list(individual)
-        self.currentFitness[i]=self.getFitnessOnIndividual(self.currentPopulation[i])
+        self.nextPopulation.append(list(individual))
+        #self.currentFitness[i]=self.getFitnessOnIndividual(self.currentPopulation[i])
 
     def getConflictPosition(self, individual):
         fitnessCount=0
@@ -327,7 +288,7 @@ class Population:
             self.bestFitness=fitnessCount
             self.bestPosition=individual
             clear_console()
-            print("n =", self.n)
+            print("n =" , self.n)
             self.printPosition(self.bestPosition)
             genCount=self.generationCount
             print("Best Fitness ", self.bestFitness, ", at Generation ", genCount)

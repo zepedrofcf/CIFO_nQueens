@@ -11,10 +11,10 @@ crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometr
 
 
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
-    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
+    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True, eliteProportion=0.1)
     population.solve(maxGenerations)
 
-solveNQueens(100, 8, 100, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[0])
+solveNQueens(100, 12, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[1])
 
 ##################################################################################################
 # For 2D graphs we can only have 2 sets of parameters changing max.
