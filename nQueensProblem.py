@@ -207,19 +207,27 @@ class Population:
         return firstOffspring, secondOffspring
 
     def GeometricSemantic(self, firstParent, secondParent):
-        firstOffspring = [None]*len(firstParent)
-        secondOffspring = [None]*len(firstParent)
-        for i in range(len(firstParent)):
-            r1 = uniform(0,1)
-            r2 = uniform(0,1)
-            firstOffspring[i] = (
-                float(firstParent[i][0]) * r1 + (1 - r1) * float(secondParent[i][0]),
-                float(firstParent[i][1]) * r1 + (1 - r1) * float(secondParent[i][1])
-            )
-            secondOffspring[i] = (
-                float(firstParent[i][0]) * r2 + (1 - r2) * float(secondParent[i][0]),
-                float(firstParent[i][1]) * r2 + (1 - r2) * float(secondParent[i][1])
-            )
+        while True:
+            firstOffspring = []
+            secondOffspring = []
+            for i in range(len(firstParent)):
+                r1 = uniform(0,1)
+                r2 = uniform(0,1)
+                firstOffspring.append((
+                    round(float(firstParent[i][0]) * r1 + (1 - r1) * float(secondParent[i][0])),
+                    round(float(firstParent[i][1]) * r1 + (1 - r1) * float(secondParent[i][1]))
+                ))
+                secondOffspring.append((
+                    round(float(firstParent[i][0]) * r2 + (1 - r2) * float(secondParent[i][0])),
+                    round(float(firstParent[i][1]) * r2 + (1 - r2) * float(secondParent[i][1]))
+                ))
+
+            firstOffspring = list(set(firstOffspring))
+            secondOffspring = list(set(secondOffspring))
+
+            if len(firstOffspring) == self.n and len(secondOffspring) == self.n:
+                break
+
         if(firstParent==firstOffspring and secondParent==secondOffspring):
             self.same+=1
         else:
