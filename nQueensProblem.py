@@ -5,8 +5,8 @@ import os
 from random import sample, uniform
 
 class Population:
-    def __init__(self, size, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, elitismRate=0.1):
-        self.size = size
+    def __init__(self, populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, elitismRate=0.1):
+        self.populationSize = populationSize
         self.n = n
         self.selectionFunction=selectionFunction
         self.mutationFunction=mutationFunction
@@ -19,7 +19,7 @@ class Population:
         firstPopulation=[]
         self.same=0
         self.notSame=0
-        for indNumber in range(self.size):
+        for indNumber in range(self.populationSize):
             position=[]
             for i in range(n):
                 if indNumber%2==0:
@@ -56,7 +56,7 @@ class Population:
                 self.generationCount+=1
             #print("Best Fitness: ", self.bestFitness)
             #print("n =", self.n)
-            #print("Population Size =", self.size)
+            #print("Population Size =", self.populationSize)
             #print("Best Position: ", self.bestPosition)
             #print("Generation Count: ", self.generationCount)
             #self.printPosition(self.bestPosition)
@@ -72,13 +72,13 @@ class Population:
         self.currentPopulation=newPopulation
 
     def getbest(self):
-        numbest = int(self.elitismRate * self.size)
+        numbest = int(self.elitismRate * self.populationSize)
         sortedPopulation = sorted(zip(self.currentPopulation, self.currentFitness), key=lambda x: x[1])
         return [individual for individual, _ in sortedPopulation[:numbest]]
 
     def reintroduceBest(self, best):
         numbest = len(best)
-        remaining_population_size = self.size - numbest
+        remaining_population_size = self.populationSize - numbest
         self.currentPopulation[:numbest] = best
         for i in range(numbest):
             rand_individual = random.choice(self.currentPopulation[numbest:])
@@ -243,7 +243,7 @@ class Population:
 
     def selectAndMutate(self):
         numbest = len(self.getbest())
-        for _ in range(self.size - numbest):
+        for _ in range(self.populationSize - numbest):
             self.mutate(self.select())
             if self.bestFitness == 0:
                 break

@@ -1,7 +1,7 @@
 from nQueensProblem import Population
 import random
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+#import matplotlib.pyplot as plt
+#import matplotlib.patches as mpatches
 
 
 #these are the developed functions
@@ -11,10 +11,10 @@ crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometr
 
 
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
-    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True)
+    population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
     population.solve(maxGenerations)
 
-solveNQueens(100, 11, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[0])
+solveNQueens(150, 15, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[1])
 
 
 
