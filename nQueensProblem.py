@@ -19,6 +19,7 @@ class Population:
         firstPopulation=[]
         self.same=0
         self.notSame=0
+        self.startTime = time.time()
         for indNumber in range(self.populationSize):
             position=[]
             for i in range(n):
@@ -32,7 +33,6 @@ class Population:
         self.cumulativeNormalizedFitness=[]
     
     def solve(self, maxGenerations):
-        startTime = time.time()
         if self.n==1:
             print("Answer: (0,0)  duh")
             print("X")
@@ -60,9 +60,13 @@ class Population:
             #print("Best Position: ", self.bestPosition)
             #print("Generation Count: ", self.generationCount)
             #self.printPosition(self.bestPosition)
-            executionTime = time.time() - startTime
+            if self.bestFitness==0:
+                print("Success!")
+            else: 
+                print("Failed to reach solution in ", self.generationCount, " generations...")
+            executionTime = time.time() - self.startTime
             print("Execution time: ", format_time(executionTime))
-            print("%"," of usefull crossOvers: ", ((self.notSame/(self.same+self.notSame))*100), "%")
+            #print("%"," of usefull crossOvers: ", ((self.notSame/(self.same+self.notSame))*100), "%")
             return executionTime
 
     def doSelectionOfPopulation(self):
@@ -325,7 +329,10 @@ class Population:
             clear_console()
             print("n =", self.n)
             self.printPosition(self.bestPosition)
-            print("Best Fitness so far ", self.bestFitness, ", at Generation ", self.generationCount)
+            genCount=self.generationCount
+            print("Best Fitness ", self.bestFitness, ", at Generation ", genCount)
+            if genCount>0:
+                print("Average Rythm: ", round(genCount/(time.time() - self.startTime), 1),"Generations per second")
         return int(fitnessCount)
 
 

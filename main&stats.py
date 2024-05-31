@@ -14,7 +14,7 @@ def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationF
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
     population.solve(maxGenerations)
 
-solveNQueens(150, 8, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[3])
+solveNQueens(100, 8, 100, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[0])
 
 ##################################################################################################
 # For 2D graphs we can only have 2 sets of parameters changing max.
