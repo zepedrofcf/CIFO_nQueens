@@ -211,16 +211,14 @@ class Population:
             firstOffspring = []
             secondOffspring = []
             for i in range(len(firstParent)):
-                r1 = uniform(0,1)
-                r2 = uniform(0,1)
+                r1 = random.randint(0,1)
+                r2 = random.randint(0,1)
                 firstOffspring.append((
-                    round(float(firstParent[i][0]) * r1 + (1 - r1) * float(secondParent[i][0])),
-                    round(float(firstParent[i][1]) * r1 + (1 - r1) * float(secondParent[i][1]))
-                ))
+                    firstParent[i][0] * r1 + (1 - r1) * secondParent[i][0],
+                    firstParent[i][1] * r1 + (1 - r1) * secondParent[i][1]))
                 secondOffspring.append((
-                    round(float(firstParent[i][0]) * r2 + (1 - r2) * float(secondParent[i][0])),
-                    round(float(firstParent[i][1]) * r2 + (1 - r2) * float(secondParent[i][1]))
-                ))
+                    firstParent[i][0] * r2 + (1 - r2) * secondParent[i][0],
+                    firstParent[i][1] * r2 + (1 - r2) * secondParent[i][1]))
 
             firstOffspring = list(set(firstOffspring))
             secondOffspring = list(set(secondOffspring))
