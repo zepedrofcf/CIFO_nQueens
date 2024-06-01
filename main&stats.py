@@ -1,15 +1,16 @@
 from nQueensProblem import Population
 import random
-#import matplotlib.pyplot as plt
-#import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import logging
 
 
 #these are the developed functions
 selectionFunctions=["Tournament Selection", "Roulette Wheel Selection"]
-mutationFunctions=["Position with conflict for random", "Individual For Random", "Shift Coordinate on Position with Conflict"]
+mutationFunctions=["Position with conflict for random", "Shift Coordinate on Position with Conflict"]
 crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometricSemantic"]
 
-
+'''
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True, eliteProportion=0.1)
     population.solve(maxGenerations)
@@ -19,7 +20,7 @@ solveNQueens(100, 12, 1000, selectionFunctions[0], mutationFunctions[2], crossOv
 ##################################################################################################
 # For 2D graphs we can only have 2 sets of parameters changing max.
 # So need to do it in more than one section to compare everything.
-
+'''
 #### VARIABLE PARAMETERS: "n" and "populationSize" with elitism option ####
 
 '''
@@ -65,10 +66,10 @@ def plotResults(results):
     plt.show()
 
 
-n_values = range(4, 10)   # only from 4 onwards
+n_values = range(4, 17)   # only from 4 onwards
 populationSizes = [100]
 elitismoption = [True]
-results = Statistics(populationSizes, 20000, selectionFunctions[1], mutationFunctions[2], crossOverFunctions[0], n_values, elitismoption=elitismoption)
+results = Statistics(populationSizes, 20000, selectionFunctions[0], mutationFunctions[0], crossOverFunctions[1], n_values, elitismoption=elitismoption)
 plotResults(results)
 '''
 
@@ -77,7 +78,7 @@ plotResults(results)
 
 '''
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
-    population = Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction)
+    population = Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True, eliteProportion=0.1)
     executionTime = population.solve(maxGenerations)
     return executionTime  # Return execution time
 
@@ -118,11 +119,11 @@ def plotResults(results):
     plt.show()
 
 
-n_values = range(4, 8)
-populationSize = 200
-selectionFunctions_=["Roulette Wheel Selection"]
+n_values = range(4, 10)
+populationSize = 150
+selectionFunctions_=["Tournament Selection"]
 mutationFunctions_=["Position with conflict for random", "Shift Coordinate on Position with Conflict"]
-crossOverFunctions_=["crossHalf","crossSinglePoint"]
+crossOverFunctions_=["crossHalf", "crossSinglePoint"]
 results = Statistics(populationSize, 10000, selectionFunctions_, mutationFunctions_, crossOverFunctions_, n_values)
 plotResults(results)
 '''
@@ -195,10 +196,10 @@ def plotResults(results, changing_variable):
 maxGenerations = 15000
 num_runs = 30
 changing_variable = "n"    # Change what you want to analyze
-values = [5, 6, 7, 8]      # Values for the chosen variable
-selectionFunction = "Roulette Wheel Selection"
-mutationFunction = "Shift Coordinate on Position with Conflict"
-crossOverFunction = "crossHalf"
+values = [7, 10, 13, 16]      # Values for the chosen variable
+selectionFunction = "Tournament Selection"
+mutationFunction = "Position with conflict for random"
+crossOverFunction = "crossSinglePoint"
 n = 5
 populationSize = 100
 elitism = True

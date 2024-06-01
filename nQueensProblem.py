@@ -3,9 +3,10 @@ import time
 import datetime
 import os
 from random import sample, uniform
+import logging
 
 class Population:
-    def __init__(self, populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=False, eliteProportion=0.1):
+    def __init__(self, populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True, eliteProportion=0.1):
         self.populationSize = populationSize
         self.n = n
         self.selectionFunction=selectionFunction
@@ -211,12 +212,25 @@ class Population:
             print(str)
 
     def selectAndMutate(self):
+        logging.debug("Starting selection and mutation process")
+        # If the best fitness is already optimal (0), skip mutation
+        if self.bestFitness == 0:
+            logging.info("Optimal solution already found, skipping mutation")
+            return
         while len(self.nextPopulation) < self.populationSize:
-            self.mutate(self.select())
-            if self.bestFitness == 0:
-                break
+            selected_individual = self.select()
+            if selected_individual is not None:
+                logging.debug(f"Selected individual: {selected_individual}")
+                self.mutate(selected_individual)
+                if self.bestFitness == 0:
+                    logging.info("Optimal solution found during mutation, stopping further mutations")
+                    break
+            else:
+                logging.warning("Selected individual is None")
+        logging.debug("Completed selection and mutation process")
 
     def select(self):
+        #print(f"Generation: {self.generationCount}")
         if(self.selectionFunction=="Tournament Selection"):
             contestants=random.sample(self.currentPopulation, 2)
             return self.currentPopulation.index(self.makeTournament(contestants[0],contestants[1]))
