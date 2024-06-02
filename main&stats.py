@@ -10,17 +10,17 @@ selectionFunctions=["Tournament Selection", "Roulette Wheel Selection"]
 mutationFunctions=["Position with conflict for random", "Shift Coordinate on Position with Conflict"]
 crossOverFunctions=["crossHalf", "crossSinglePoint", "crossCycle", "crossGeometricSemantic"]
 
-'''
+
 def solveNQueens(populationSize, n, maxGenerations, selectionFunction, mutationFunction, crossOverFunction):
     population=Population(populationSize, n, selectionFunction, mutationFunction, crossOverFunction, elitism=True, eliteProportion=0.1)
     population.solve(maxGenerations)
 
-solveNQueens(100, 12, 1000, selectionFunctions[0], mutationFunctions[2], crossOverFunctions[1])
+solveNQueens(100, 12, 1000, selectionFunctions[0], mutationFunctions[1], crossOverFunctions[1])
 
 ##################################################################################################
 # For 2D graphs we can only have 2 sets of parameters changing max.
 # So need to do it in more than one section to compare everything.
-'''
+
 #### VARIABLE PARAMETERS: "n" and "populationSize" with elitism option ####
 
 '''
