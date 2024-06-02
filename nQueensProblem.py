@@ -45,10 +45,10 @@ class Population:
                 self.doSelectionOfPopulation()
                 if self.bestFitness==0:
                     break              
-                self.crossOver()
                 self.nextPopulation=[]
                 if self.elitismEnabled:
                     self.nextPopulation = self.getBest()
+                self.crossOver()
                 self.selectAndMutate()
                 self.currentPopulation=self.nextPopulation
                 self.getFitnessOnPopulation()
